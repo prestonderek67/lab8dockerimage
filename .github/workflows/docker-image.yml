@@ -1,0 +1,44 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKERPASSWORD }}" | docker login -u "dpresto" --password-stdin
+
+      - name: Build Docker image
+        run: |
+          docker build -t cool_docker .
+
+      - name: Tag image
+        run: |
+          docker tag cool_docker dpresto/nice_docker:latest
+
+      - name: Push image
+        run: |
+          docker push dpresto/nice_docker:latest
+
+      - name: Create kubeconfig
+        run: |
+          mkdir ${HOME}/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > ${HOME}/.kube/config
+
+      - name: Verify cluster
+        run: |
+          kubectl version
+          kubectl config view
+
+      - name: Restart deployment
+        run: |
+          kubectl rollout restart deployment cst407-deployment
