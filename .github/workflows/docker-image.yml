@@ -29,16 +29,4 @@ jobs:
         run: |
           docker push dpresto/nice_docker:latest
 
-      - name: Create kubeconfig
-        run: |
-          mkdir ${HOME}/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 --decode > ${HOME}/.kube/config
 
-      - name: Verify cluster
-        run: |
-          kubectl version
-          kubectl config view
-
-      - name: Restart deployment
-        run: |
-          kubectl rollout restart deployment cst407-deployment
